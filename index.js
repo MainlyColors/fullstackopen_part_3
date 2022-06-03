@@ -30,6 +30,14 @@ app.get('/api/notes', (req, res) => {
   res.json(notes);
 });
 
+app.get('/api/notes/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const note = notes.find((note) => note.id === id);
+  // sending a message is not required because REST APIs are interfaces so the 404 is only thing needed
+  if (note) res.json(note);
+  else res.status(404).send('Note not found');
+});
+
 const PORT = 8000;
 app.listen(PORT, () => {
   console.log(`Server is live on port ${PORT} you fool`);
