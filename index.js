@@ -9,7 +9,7 @@ let notes = [
     important: true,
   },
   {
-    id: 3,
+    id: 2,
     content: 'Browser can execute only JavaScript',
     date: '2022-05-30T18:39:34.091Z',
     important: false,
@@ -21,6 +21,52 @@ let notes = [
     important: true,
   },
 ];
+
+// ***************
+// MIDDLEWARE
+// ***************
+
+// parses incoming requests with JSON payloads
+// mounts the middleware functions at the specified path
+// app.use([path,] callback [, callback...]) takes an optional path argument
+// if path is not used, defaults to "/" meaning middleware mounted w/o a path will be executed for every request to the app.
+app.use(express.json());
+
+// ***************
+// UTIL functions
+// ***************
+
+const generateID = () => {
+  // not recommended for getting max
+  const maxID = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
+  return maxID + 1;
+};
+
+// ***************
+// ROUTES
+// ***************
+
+app.post('/api/notes', (req, res) => {
+  const body = req.body;
+
+  // if empty
+  if (!body.content) {
+    return res.status(400).json({
+      error: 'content missing',
+    });
+  }
+
+  const note = {
+    content: body.content,
+    important: body.important || false, // if missing, set false
+    date: new Date(), // better to set date on server because we can't trust host machine
+    id: generateID(),
+  };
+
+  notes = notes.concat(note);
+
+  res.json(note);
+});
 
 app.get('/', (req, res) => {
   res.send('<h1>Hello World!</h1>');
@@ -36,6 +82,13 @@ app.get('/api/notes/:id', (req, res) => {
   // sending a message is not required because REST APIs are interfaces so the 404 is only thing needed
   if (note) res.json(note);
   else res.status(404).send('Note not found');
+});
+
+app.delete('/api/notes/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const note = notes.find((note) => note.id === id);
+
+  res.status(204).end();
 });
 
 const PORT = 8000;
