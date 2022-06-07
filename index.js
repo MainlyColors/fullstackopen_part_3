@@ -23,7 +23,7 @@ let notes = [
 ];
 
 // ***************
-// MIDDLEWARE
+// MIDDLEWARE - before routes
 // ***************
 
 // parses incoming requests with JSON payloads
@@ -31,6 +31,16 @@ let notes = [
 // app.use([path,] callback [, callback...]) takes an optional path argument
 // if path is not used, defaults to "/" meaning middleware mounted w/o a path will be executed for every request to the app.
 app.use(express.json());
+
+const requestLogger = (req, res, next) => {
+  console.log('Method:', req.method);
+  console.log('Path:  ', req.path);
+  console.log('Body:  ', req.body);
+  console.log('---');
+  next();
+};
+
+app.use(requestLogger);
 
 // ***************
 // UTIL functions
@@ -90,6 +100,16 @@ app.delete('/api/notes/:id', (req, res) => {
 
   res.status(204).end();
 });
+
+// ***************
+// MIDDLEWARE - after routes aka if no routes get picked
+// ***************
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' });
+};
+
+app.use(unknownEndpoint);
 
 const PORT = 8000;
 app.listen(PORT, () => {
